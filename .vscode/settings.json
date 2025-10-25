@@ -2,19 +2,19 @@
     "sqltools.connections": [
         {
             "mysqlOptions": {
-                "authProtocol": "xprotocol",
+                "authProtocol": "default",
                 "enableSsl": "Disabled"
             },
             "ssh": "Disabled",
             "previewLimit": 50,
             "server": "localhost",
-            "port": 33060,
+            "port": 3306,
             "driver": "MySQL",
-            "name": "Mysql Local",
+            "name": "MySQL healthpal",
             "database": "healthpal",
             "username": "root",
-            "password": "123456",
-            "connectionTimeout": 30
+            "password": "Hit@65558",
+            "connectionTimeout": 300
         }
     ]
 }
