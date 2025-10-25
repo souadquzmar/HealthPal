@@ -1,7 +1,7 @@
 CREATE DATABASE IF NOT EXISTS healthpal;
 USE healthpal;
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   full_name VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL UNIQUE,
@@ -10,7 +10,7 @@ CREATE TABLE users (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE patients (
+CREATE TABLE IF NOT EXISTS patients (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
   gender ENUM('male', 'female'),
@@ -19,7 +19,7 @@ CREATE TABLE patients (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE doctors (
+CREATE TABLE IF NOT EXISTS doctors (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
   specialty VARCHAR(255),
@@ -27,7 +27,7 @@ CREATE TABLE doctors (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE appointments (
+CREATE TABLE IF NOT EXISTS appointments (
   id INT AUTO_INCREMENT PRIMARY KEY,
   patient_id INT NOT NULL,
   doctor_id INT NOT NULL,
@@ -38,7 +38,7 @@ CREATE TABLE appointments (
   FOREIGN KEY (doctor_id) REFERENCES doctors(id) ON DELETE CASCADE
 );
 
-CREATE TABLE ngos (
+CREATE TABLE IF NOT EXISTS ngos (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
   organization_name VARCHAR(255) NOT NULL,
@@ -46,7 +46,7 @@ CREATE TABLE ngos (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE donations (
+CREATE TABLE IF NOT EXISTS donations (
   id INT AUTO_INCREMENT PRIMARY KEY,
   donor_id INT NOT NULL,
   ngo_id INT,
@@ -57,11 +57,38 @@ CREATE TABLE donations (
   FOREIGN KEY (ngo_id) REFERENCES ngos(id) ON DELETE SET NULL
 );
 
-CREATE TABLE medicines (
+CREATE TABLE IF NOT EXISTS medicines (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  expiry_date DATE,
-  quantity INT DEFAULT 0
+  name VARCHAR(100) NOT NULL,
+  description TEXT,
+  quantity INT DEFAULT 0,
+  requester_name VARCHAR(100),
+  requester_contact VARCHAR(100),
+  status ENUM('requested','in_progress','fulfilled') DEFAULT 'requested',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS equipment (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  type VARCHAR(50),
+  available BOOLEAN DEFAULT TRUE,
+  location VARCHAR(100),
+  provider_name VARCHAR(100),
+  contact_info VARCHAR(100),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS inventory (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  item_name VARCHAR(100) NOT NULL,
+  category ENUM('medicine','equipment') DEFAULT 'medicine',
+  quantity INT DEFAULT 1,
+  donor_name VARCHAR(100),
+  contact_info VARCHAR(100),
+  status ENUM('available','reserved','delivered') DEFAULT 'available',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 
 
