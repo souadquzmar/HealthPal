@@ -90,5 +90,66 @@ CREATE TABLE IF NOT EXISTS inventory (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS counselors (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  specialty ENUM('PTSD','grief','stress','general') DEFAULT 'general',
+  description TEXT,
+  available BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS counseling_sessions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  counselor_id INT NOT NULL,
+  patient_id INT NOT NULL,
+  scheduled_at DATETIME NOT NULL,
+  status ENUM('pending','confirmed','completed','cancelled') DEFAULT 'pending',
+  notes TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (counselor_id) REFERENCES counselors(id) ON DELETE CASCADE,
+  FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS support_groups (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(150) NOT NULL,
+  description TEXT,
+  created_by INT, -- user id who created it (admin or moderator)
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS group_posts (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  group_id INT NOT NULL,
+  user_id INT NOT NULL,
+  content TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  removed BOOLEAN DEFAULT FALSE, -- moderation flag
+  FOREIGN KEY (group_id) REFERENCES support_groups(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS therapy_sessions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  counselor_id INT NOT NULL,
+  patient_id INT NOT NULL,
+  started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  is_anonymous BOOLEAN DEFAULT TRUE,
+  FOREIGN KEY (counselor_id) REFERENCES counselors(id) ON DELETE CASCADE,
+  FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS therapy_messages (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  session_id INT NOT NULL,
+  sender_role ENUM('patient','counselor') NOT NULL,
+  message TEXT NOT NULL,
+  sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (session_id) REFERENCES therapy_sessions(id) ON DELETE CASCADE
+);
+
 
 

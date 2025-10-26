@@ -1,4 +1,5 @@
 import express from 'express';
+import counselingRoutes from './routes/counselingRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import medicineRoutes from './routes/medicineRoutes.js';
 import equipmentRoutes from './routes/equipmentRoutes.js';
@@ -9,9 +10,11 @@ const app = express();
 
 app.use(express.json());
 app.use('/api/auth', authRoutes);
+app.use('/api', counselingRoutes);
 app.use('/api/medicines', medicineRoutes);
 app.use('/api/equipment', equipmentRoutes);
 app.use('/api/inventory', inventoryRoutes);
+
 
 
 app.get('/', (req, res) => {
@@ -29,5 +32,7 @@ app.get('/health', (req, res) => {
 
 app.use(errorHandler);
 
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 export default app;
