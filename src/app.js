@@ -5,7 +5,8 @@ import medicineRoutes from './routes/medicineRoutes.js';
 import equipmentRoutes from './routes/equipmentRoutes.js';
 import inventoryRoutes from './routes/inventoryRoutes.js';
 import { errorHandler } from './middlewares/errorHandler.js';
-
+import { verifyAdmin, verifyToken } from './middlewares/authMiddleware.js';
+import adminRoutes from './routes/adminRoutes.js';
 const app = express();
 
 app.use(express.json());
@@ -14,7 +15,7 @@ app.use('/api', counselingRoutes);
 app.use('/api/medicines', medicineRoutes);
 app.use('/api/equipment', equipmentRoutes);
 app.use('/api/inventory', inventoryRoutes);
-
+app.use('/api/admin',verifyToken,adminRoutes);
 
 
 app.get('/', (req, res) => {

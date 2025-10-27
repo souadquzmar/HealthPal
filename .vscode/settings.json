@@ -10,11 +10,10 @@
             "server": "localhost",
             "port": 3306,
             "driver": "MySQL",
-            "name": "MySQL healthpal",
+            "name": "MySQL HealthPal",
             "database": "healthpal",
             "username": "root",
-            "password": "Hit@65558",
-            "connectionTimeout": 300
+            "askForPassword": true
         }
     ]
 }

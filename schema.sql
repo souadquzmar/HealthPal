@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS support_groups (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(150) NOT NULL,
   description TEXT,
-  created_by INT, -- user id who created it (admin or moderator)
+  created_by INT, 
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
 );
@@ -127,7 +127,7 @@ CREATE TABLE IF NOT EXISTS group_posts (
   user_id INT NOT NULL,
   content TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  removed BOOLEAN DEFAULT FALSE, -- moderation flag
+  removed BOOLEAN DEFAULT FALSE,
   FOREIGN KEY (group_id) REFERENCES support_groups(id) ON DELETE CASCADE,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -150,6 +150,3 @@ CREATE TABLE IF NOT EXISTS therapy_messages (
   sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (session_id) REFERENCES therapy_sessions(id) ON DELETE CASCADE
 );
-
-
-
