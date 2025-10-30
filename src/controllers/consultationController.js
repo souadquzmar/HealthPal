@@ -122,3 +122,44 @@ export const getDoctorConsultations = async(req,res) => {
     return res.status(500).json({ message: "Internal server error." });
   }
 }
+
+export const updateConsultationStatus = async (req,res) => {
+  try{
+
+    const appointmentId = req.params.id;
+    const {status} = req.body;
+    const userId = req.user.id;
+
+    const allowedStatuses = ['confirmed','cancelled','completed'];
+    if(!allowedStatuses.includes(status))
+      return res.status(400).json({message: 'Invalid status.'});
+
+    const [appointments] = await db.query(
+      `SELECT a.*, d.user_id AS doctor_user_id
+       FROM appointments a
+       JOIN doctors d ON a.doctor_id = d.id
+       WHERE a.id = ?`,
+      [appointmentId]
+    );
+
+    if(appointments.length === 0)
+      return res.status(404).json({message:'Appointment not found.'});
+
+    const appointment = appointments[0];
+
+    if(req.user.role === 'doctor' && appointment.doctor_user_id !== userId)
+      return res.status(403).json({message: 'Access denied. You are not assigned to this consultation.'});
+
+    await db.query(`update appointments set status = ? where id = ?`,[status,appointmentId]);
+
+    return res.status(200).json({
+      message:`Consultation status updated to '${status}' successfully.`,
+      appointment_id: appointmentId,
+      new_status: status
+    });
+
+  } catch(error){
+    console.log(error);
+    return res.status(500).json({ message: "Internal server error." });
+  }
+}
