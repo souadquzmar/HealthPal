@@ -89,3 +89,36 @@ export const getPatientConsultations = async (req, res) => {
     return res.status(500).json({ message: "Internal server error." });
   }
 };
+
+export const getDoctorConsultations = async(req,res) => {
+  try{
+
+    const doctorId = req.params.id;
+    if(!doctorId)
+      return res.status(400).json({message: 'Doctor ID is required.'});
+
+    const [consultations] = await db.query(
+      `SELECT 
+          a.id AS appointment_id,
+          a.scheduled_at,
+          a.status,
+          a.notes,
+          p.id AS patient_id,
+          u.full_name AS patient_name
+       FROM appointments a
+       JOIN patients p ON a.patient_id = p.id
+       JOIN users u ON p.user_id = u.id
+       WHERE a.doctor_id = ?
+       ORDER BY a.scheduled_at DESC`,
+      [doctorId]
+    );
+
+    if(consultations.length === 0)
+      return res.status(404).json({message: 'No consultations found for this doctor.'});
+
+    return res.status(200).json({message: 'Consultations retrieved successfully.',consultations});
+  } catch(error){
+    console.log(error);
+    return res.status(500).json({ message: "Internal server error." });
+  }
+}
