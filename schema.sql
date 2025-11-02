@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+
 CREATE TABLE IF NOT EXISTS patients (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
@@ -116,9 +117,11 @@ CREATE TABLE IF NOT EXISTS support_groups (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(150) NOT NULL,
   description TEXT,
-  created_by INT, 
+  created_by INT,
+  moderator_id INT,                             
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (moderator_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS group_posts (
@@ -138,6 +141,7 @@ CREATE TABLE IF NOT EXISTS therapy_sessions (
   patient_id INT NOT NULL,
   started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   is_anonymous BOOLEAN DEFAULT TRUE,
+  status ENUM('active','ended') DEFAULT 'active',   
   FOREIGN KEY (counselor_id) REFERENCES counselors(id) ON DELETE CASCADE,
   FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
 );

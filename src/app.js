@@ -1,5 +1,4 @@
 import express from 'express';
-import counselingRoutes from './routes/counselingRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import medicineRoutes from './routes/medicineRoutes.js';
 import equipmentRoutes from './routes/equipmentRoutes.js';
@@ -13,7 +12,6 @@ const app = express();
 
 app.use(express.json());
 app.use('/api/auth', authRoutes);
-app.use('/api', counselingRoutes);
 app.use('/api/medicines', medicineRoutes);
 app.use('/api/equipment', equipmentRoutes);
 app.use('/api/inventory', inventoryRoutes);
