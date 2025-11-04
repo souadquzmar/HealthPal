@@ -8,6 +8,8 @@ import { verifyToken } from './middlewares/authMiddleware.js';
 import adminRoutes from './routes/adminRoutes.js';
 import specialtiesRouter from './routes/specialtiesRoutes.js';
 import consultationRoutes from './routes/consultationRoutes.js';
+import messageRoutes from './routes/messageRoutes.js';
+
 const app = express();
 
 app.use(express.json());
@@ -18,6 +20,7 @@ app.use('/api/inventory', inventoryRoutes);
 app.use('/api/admin',verifyToken,adminRoutes);
 app.use('/api',specialtiesRouter);
 app.use('/api',consultationRoutes);
+app.use('/api',messageRoutes);
 
 app.get('/', (req, res) => {
     res.send('HealthPal is running');

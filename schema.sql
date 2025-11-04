@@ -154,3 +154,12 @@ CREATE TABLE IF NOT EXISTS therapy_messages (
   sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (session_id) REFERENCES therapy_sessions(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS consultation_messages (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  consultation_id INT NOT NULL,
+  sender_role ENUM('patient','doctor') NOT NULL,
+  message TEXT NOT NULL,
+  sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (consultation_id) REFERENCES appointments(id) ON DELETE CASCADE
+);
