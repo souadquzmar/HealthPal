@@ -30,11 +30,7 @@ export const sendMessage = async (req, res) => {
       (userRole === "patient" && consultation.patient_user_id === userId);
 
     if (!isParticipant)
-      return res
-        .status(403)
-        .json({
-          message: "Access denied. you are not part of this consultation",
-        });
+      return res.status(403).json({message: "Access denied. you are not part of this consultation"});
 
     const [result] = await db.query(
       "insert into consultation_messages (consultation_id, sender_role, message) values (?, ?, ?)",
@@ -82,11 +78,7 @@ export const getMessagesByConsultations = async (req, res) => {
       (userRole === "patient" && consultation.patient_user_id === userId);
 
     if (!isParticipant)
-      return res
-        .status(403)
-        .json({
-          message: "Access denied. you are not part of this consultation",
-        });
+      return res.status(403).json({message: "Access denied. you are not part of this consultation"});
 
     const [messages] = await db.query('select id,sender_role,message,sent_at from consultation_messages where consultation_id = ? order by sent_at asc',[consultationId]);
 

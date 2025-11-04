@@ -163,3 +163,13 @@ CREATE TABLE IF NOT EXISTS consultation_messages (
   sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (consultation_id) REFERENCES appointments(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS consultation_calls (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  consultation_id INT NOT NULL,
+  started_by ENUM('patient','doctor') NOT NULL,
+  started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  ended_at TIMESTAMP NULL,
+  status ENUM('active','ended') DEFAULT 'active',
+  FOREIGN KEY (consultation_id) REFERENCES appointments(id) ON DELETE CASCADE
+);
