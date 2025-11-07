@@ -146,10 +146,18 @@ export const updateConsultationStatus = async (req,res) => {
       return res.status(404).json({message:'Appointment not found.'});
 
     const appointment = appointments[0];
+    const appointmentTime = new Date(appointment.scheduled_at);
+    const now = new Date();
 
     if(req.user.role === 'doctor' && appointment.doctor_user_id !== userId)
       return res.status(403).json({message: 'Access denied. You are not assigned to this consultation.'});
 
+    if(appointment.status === 'completed')
+      return res.status(400).json({message:'This consultation is already completed.'});
+
+    if(status === 'cancelled' && appointmentTime < now)
+      return res.status(400).json({message:'Cannot cancel a consultation that has already occurred.'});
+    
     await db.query(`update appointments set status = ? where id = ?`,[status,appointmentId]);
 
     return res.status(200).json({
