@@ -176,10 +176,18 @@ CREATE TABLE IF NOT EXISTS consultation_calls (
 
 CREATE TABLE IF NOT EXISTS cases (
   id INT AUTO_INCREMENT PRIMARY KEY,
+  patient_id INT NOT NULL,
   title VARCHAR(255) NOT NULL,
   description TEXT,
-  category VARCHAR(100),
+  category ENUM('surgery','cancer','dialysis','rehabilitation','general') DEFAULT 'general',
   location VARCHAR(255),
+  goal_amount DECIMAL(10,2) NOT NULL,
+  raised_amount DECIMAL(10,2) DEFAULT 0.00,
+  update_text TEXT,
+  recovered BOOLEAN DEFAULT FALSE,
   status ENUM('active', 'resolved', 'in_progress') DEFAULT 'active',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
 );
+
+
