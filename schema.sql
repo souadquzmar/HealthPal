@@ -173,3 +173,13 @@ CREATE TABLE IF NOT EXISTS consultation_calls (
   status ENUM('active','ended') DEFAULT 'active',
   FOREIGN KEY (consultation_id) REFERENCES appointments(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS cases (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  category VARCHAR(100),
+  location VARCHAR(255),
+  status ENUM('active', 'resolved', 'in_progress') DEFAULT 'active',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

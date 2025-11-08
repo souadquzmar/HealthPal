@@ -11,6 +11,7 @@ import consultationRoutes from './routes/consultationRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
 import callRoutes from './routes/callRoutes.js';
 import translateRoutes from './routes/translateRoutes.js';
+import casesRoutes from './routes/casesRoutes.js';
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use('/api',consultationRoutes);
 app.use('/api',messageRoutes);
 app.use('/api',callRoutes);
 app.use('/api',translateRoutes);
+app.use('/api',casesRoutes);
 
 app.get('/', (req, res) => {
     res.send('HealthPal is running');
