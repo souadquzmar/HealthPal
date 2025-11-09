@@ -1,187 +1,164 @@
-import pool from '../config/database.js';
+import db from '../config/database.js';
 
-export const getCounselors = async (req, res) => {
-  try {
-    const [rows] = await pool.query(`
+export const getCounselors= async (req, res) => {
+  try{
+   const [rows] = await db.query(`
       SELECT c.id, u.full_name, c.specialty, c.description, c.available
       FROM counselors c
       JOIN users u ON c.user_id = u.id
       WHERE c.available = TRUE
     `);
     res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch counselors', error: error.message });
   }
 };
 
 export const bookCounselingSession = async (req, res) => {
-  const { counselor_id, scheduled_at, notes } = req.body;
-  const patient_id = req.user.patient_id;
+  const { counselor_id, scheduled_at } = req.body;
+  const userId = req.user.id;
 
   try {
-    const [result] = await pool.query(
-      `INSERT INTO counseling_sessions 
-       (counselor_id, patient_id, scheduled_at, notes) 
-       VALUES (?, ?, ?, ?)`,
-      [counselor_id, patient_id, scheduled_at, notes || null]
+    
+    const [patient] = await db.query('SELECT id FROM patients WHERE user_id = ?', [userId]);
+    if (patient.length === 0) return res.status(404).json({ message: 'Patient not found' });
+
+    const patient_id = patient[0].id;
+
+    const [result] = await db.query(
+      `INSERT INTO counseling_sessions (counselor_id, patient_id, scheduled_at)
+       VALUES (?, ?, ?)`,
+      [counselor_id, patient_id, scheduled_at]
     );
-    res.status(201).json({ sessionId: result.insertId });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+
+    res.status(201).json({
+      session_id: result.insertId,
+      message: 'Session booked successfully'
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Booking failed', error: error.message });
   }
 };
 
-export const getMyCounselingSessions = async (req, res) => {
-  const patient_id = req.user.patient_id;
+export const createSupportGroup = async (req, res) => {
+  const { name, description } = req.body;
+  const created_by = req.user.id;
+
   try {
-    const [rows] = await pool.query(`
-      SELECT cs.*, u.full_name AS counselor_name, c.specialty
-      FROM counseling_sessions cs
-      JOIN counselors c ON cs.counselor_id = c.id
-      JOIN users u ON c.user_id = u.id
-      WHERE cs.patient_id = ?
-      ORDER BY cs.scheduled_at DESC
-    `, [patient_id]);
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const [result] = await db.query(
+      `INSERT INTO support_groups (name, description, created_by, moderator_id)
+       VALUES (?, ?, ?, ?)`,
+      [name, description, created_by, created_by]
+    );
+
+    res.status(201).json({
+      group_id: result.insertId,
+      message: 'Support group created'
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to create group', error: error.message });
   }
 };
 
 export const getSupportGroups = async (req, res) => {
   try {
-    const [rows] = await pool.query(`
-      SELECT sg.*, u.full_name AS creator_name, m.full_name AS moderator_name
+    const [rows] = await db.query(`
+      SELECT sg.id, sg.name, sg.description, sg.created_at, u.full_name AS creator
       FROM support_groups sg
-      LEFT JOIN users u ON sg.created_by = u.id
-      LEFT JOIN users m ON sg.moderator_id = m.id
+      JOIN users u ON sg.created_by = u.id
+      ORDER BY sg.created_at DESC
     `);
     res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch groups', error: error.message });
   }
 };
 
-export const createSupportGroup = async (req, res) => {
-  const { name, description, moderator_id } = req.body;
-  const created_by = req.user.id;
+export const createGroupPost = async (req, res) => {
+  const { group_id, content } = req.body;
+  const user_id = req.user.id;
 
   try {
-    const [result] = await pool.query(
-      `INSERT INTO support_groups (name, description, created_by, moderator_id)
-       VALUES (?, ?, ?, ?)`,
-      [name, description, created_by, moderator_id || null]
+    const [result] = await db.query(
+      `INSERT INTO group_posts (group_id, user_id, content) VALUES (?, ?, ?)`,
+      [group_id, user_id, content]
     );
-    res.status(201).json({ groupId: result.insertId });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(201).json({ post_id: result.insertId });
+  } catch (error) {
+    res.status(500).json({ message: 'Post failed', error: error.message });
   }
 };
 
 export const getGroupPosts = async (req, res) => {
-  const { groupId } = req.params;
+  const { group_id } = req.params;
+
   try {
-    const [rows] = await pool.query(`
-      SELECT gp.*, u.full_name AS author
+    const [rows] = await db.query(`
+      SELECT gp.id, gp.content, gp.created_at, u.full_name, u.role
       FROM group_posts gp
       JOIN users u ON gp.user_id = u.id
       WHERE gp.group_id = ? AND gp.removed = FALSE
       ORDER BY gp.created_at DESC
-    `, [groupId]);
+    `, [group_id]);
+
     res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch posts', error: error.message });
   }
 };
 
-export const postInGroup = async (req, res) => {
-  const { groupId } = req.params;
-  const { content } = req.body;
-  const user_id = req.user.id;
-
-  try {
-    await pool.query(
-      `INSERT INTO group_posts (group_id, user_id, content) VALUES (?, ?, ?)`,
-      [groupId, user_id, content]
-    );
-    res.status(201).json({ message: 'Post added' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-export const deleteGroupPost = async (req, res) => {
-  const { groupId, postId } = req.params;
+export const startAnonymousTherapy = async (req, res) => {
+  const { counselor_id } = req.body;
   const userId = req.user.id;
 
   try {
-    const [group] = await pool.query(
-      `SELECT moderator_id FROM support_groups WHERE id = ?`, [groupId]
-    );
-    if (!group[0] || group[0].moderator_id !== userId) {
-      return res.status(403).json({ error: 'Not authorized' });
-    }
+    const [patient] = await db.query('SELECT id FROM patients WHERE user_id = ?', [userId]);
+    if (patient.length === 0) return res.status(404).json({ message: 'Patient not found' });
 
-    await pool.query(`UPDATE group_posts SET removed = TRUE WHERE id = ?`, [postId]);
-    res.json({ message: 'Post removed' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
+    const patient_id = patient[0].id;
 
-export const startTherapySession = async (req, res) => {
-  const { counselor_id, is_anonymous = true } = req.body;
-  const patient_id = req.user?.patient_id || null;
-
-  try {
-    const [result] = await pool.query(
+    const [result] = await db.query(
       `INSERT INTO therapy_sessions (counselor_id, patient_id, is_anonymous)
-       VALUES (?, ?, ?)`,
-      [counselor_id, patient_id, is_anonymous]
+       VALUES (?, ?, TRUE)`,
+      [counselor_id, patient_id]
     );
-    res.json({ sessionId: result.insertId });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+
+    res.status(201).json({ session_id: result.insertId });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to start session', error: error.message });
   }
 };
 
 export const sendTherapyMessage = async (req, res) => {
-  const { sessionId } = req.params;
-  const { message } = req.body;
-  const sender_role = req.user.role === 'doctor' ? 'counselor' : 'patient';
+  const { session_id, message } = req.body;
+  const sender_role = req.user.role === 'patient' ? 'patient' : 'counselor';
 
   try {
-    await pool.query(
+    await db.query(
       `INSERT INTO therapy_messages (session_id, sender_role, message)
        VALUES (?, ?, ?)`,
-      [sessionId, sender_role, message]
+      [session_id, sender_role, message]
     );
-    res.status(201).json({ ok: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+
+    res.json({ success: true, message: 'Message sent' });
+  } catch (error) {
+    res.status(500).json({ message: 'Send failed', error: error.message });
   }
 };
-
 export const getTherapyMessages = async (req, res) => {
-  const { sessionId } = req.params;
-  try {
-    const [rows] = await pool.query(`
-      SELECT * FROM therapy_messages
-      WHERE session_id = ?
-      ORDER BY sent_at ASC
-    `, [sessionId]);
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
+  const { session_id } = req.params;
 
-export const endTherapySession = async (req, res) => {
-  const { sessionId } = req.params;
   try {
-    await pool.query(`UPDATE therapy_sessions SET status = 'ended' WHERE id = ?`, [sessionId]);
-    res.json({ message: 'Session ended' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const [rows] = await db.query(
+      `SELECT id, sender_role, message, sent_at
+       FROM therapy_messages
+       WHERE session_id = ?
+       ORDER BY sent_at ASC`,
+      [session_id]
+    );
+
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch messages', error: error.message });
   }
 };

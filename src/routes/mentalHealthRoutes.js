@@ -2,35 +2,28 @@ import express from 'express';
 import {
   getCounselors,
   bookCounselingSession,
-  getMyCounselingSessions,
-  getSupportGroups,
   createSupportGroup,
+  getSupportGroups,
+  createGroupPost,
   getGroupPosts,
-  postInGroup,
-  deleteGroupPost,
-  startTherapySession,
+  startAnonymousTherapy,
   sendTherapyMessage,
-  getTherapyMessages,
-  endTherapySession
+  getTherapyMessages
 } from '../controllers/mentalHealthController.js';
-
 import { verifyToken, verifyRole } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
 router.get('/counselors', getCounselors);
 router.post('/counseling/book', verifyToken, verifyRole(['patient']), bookCounselingSession);
-router.get('/counseling/my', verifyToken, verifyRole(['patient']), getMyCounselingSessions);
 
+router.post('/groups', verifyToken, createSupportGroup);
 router.get('/groups', getSupportGroups);
-router.post('/groups', verifyToken, verifyRole(['admin', 'doctor']), createSupportGroup);
-router.get('/groups/:groupId/posts', getGroupPosts);
-router.post('/groups/:groupId/posts', verifyToken, postInGroup);
-router.delete('/groups/:groupId/posts/:postId', verifyToken, deleteGroupPost);
+router.post('/groups/post', verifyToken, createGroupPost);
+router.get('/groups/:group_id/posts', getGroupPosts);
 
-router.post('/therapy/start', verifyToken, startTherapySession);
-router.post('/therapy/:sessionId/message', verifyToken, sendTherapyMessage);
-router.get('/therapy/:sessionId', verifyToken, getTherapyMessages);
-router.patch('/therapy/:sessionId/end', verifyToken, endTherapySession);
+router.post('/therapy/start', verifyToken, verifyRole(['patient']), startAnonymousTherapy);
+router.post('/therapy/message', verifyToken, sendTherapyMessage);
+router.get('/therapy/:session_id/messages', verifyToken, getTherapyMessages);
 
 export default router;

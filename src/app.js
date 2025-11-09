@@ -12,7 +12,7 @@ import messageRoutes from './routes/messageRoutes.js';
 import callRoutes from './routes/callRoutes.js';
 import translateRoutes from './routes/translateRoutes.js';
 import casesRoutes from './routes/casesRoutes.js';
-
+import mentalHealthRoutes from './routes/mentalHealthRoutes.js';
 const app = express();
 
 app.use(express.json());
@@ -27,6 +27,7 @@ app.use('/api',messageRoutes);
 app.use('/api',callRoutes);
 app.use('/api',translateRoutes);
 app.use('/api',casesRoutes);
+app.use('/api/mental', mentalHealthRoutes);
 
 app.get('/', (req, res) => {
     res.send('HealthPal is running');
