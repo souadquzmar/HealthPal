@@ -80,7 +80,21 @@ export const registerUser = async (req, res) => {
         ? 'Doctor registered successfully. Your account is pending verification by an admin.'
         : 'User registered successfully';
 
-    res.status(201).json({ message: msg });
+    const token = jwt.sign(
+      { id: userId, role: role },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.status(201).json({
+      message: msg,
+      token,
+      user: {
+        id: userId,
+        full_name: fullName,
+        role: role
+      }
+    });
   } catch (error) {
     if (connection) {
       await connection.rollback();
