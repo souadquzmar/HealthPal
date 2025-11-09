@@ -6,10 +6,9 @@ CREATE TABLE IF NOT EXISTS users (
   full_name VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
-  role ENUM('patient', 'doctor', 'donor', 'ngo', 'admin') DEFAULT 'patient',
+  role ENUM('patient', 'doctor', 'donor', 'ngo', 'admin', 'counselor') DEFAULT 'patient',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
 
 CREATE TABLE IF NOT EXISTS patients (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -190,4 +189,53 @@ CREATE TABLE IF NOT EXISTS cases (
   FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS ngo_partners (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL, 
+  organization_name VARCHAR(255) NOT NULL,
+  description TEXT,
+  website VARCHAR(255),
+  contact_email VARCHAR(255),
+  contact_phone VARCHAR(50),
+  verified BOOLEAN DEFAULT FALSE,  
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
 
+CREATE TABLE medical_missions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  ngo_id INT NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  location VARCHAR(255),
+  start_date DATE NOT NULL,
+  end_date DATE,
+  type ENUM('fieldwork', 'mobile_clinic', 'aid_drop', 'surgery_camp') DEFAULT 'fieldwork',
+  status ENUM('planned', 'ongoing', 'completed', 'cancelled') DEFAULT 'planned',
+  created_by INT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (ngo_id) REFERENCES ngo_partners(id) ON DELETE CASCADE,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS mission_schedules (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  mission_id INT NOT NULL,
+  doctor_id INT, 
+  patient_id INT,
+  scheduled_at DATETIME NOT NULL,
+  status ENUM('available', 'requested', 'confirmed', 'cancelled') DEFAULT 'available',
+  notes TEXT,
+  FOREIGN KEY (mission_id) REFERENCES medical_missions(id) ON DELETE CASCADE,
+  FOREIGN KEY (doctor_id) REFERENCES doctors(id) ON DELETE SET NULL,
+  FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS mission_notifications (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  mission_id INT NOT NULL,
+  community_id INT, 
+  message TEXT NOT NULL,
+  sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (mission_id) REFERENCES medical_missions(id) ON DELETE CASCADE
+);
