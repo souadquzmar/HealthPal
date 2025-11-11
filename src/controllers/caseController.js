@@ -2,9 +2,23 @@ import db from "../config/database.js";
 
 export const listCases = async (req, res) => {
   try {
-    const [cases] = await db.query(
-      "select * from cases order by created_at desc"
-    );
+    const [cases] = await db.query(`
+      SELECT 
+        c.id, 
+        c.title, 
+        c.description, 
+        c.category, 
+        c.location, 
+        c.goal_amount, 
+        c.amount_raised, 
+        c.status, 
+        c.created_at,
+        u.full_name AS patient_name
+      FROM cases c
+      JOIN patients p ON c.patient_id = p.id
+      JOIN users u ON p.user_id = u.id
+      ORDER BY c.created_at DESC
+    `);
     return res.status(200).json({
       success: true,
       count: cases.length,
@@ -19,29 +33,15 @@ export const listCases = async (req, res) => {
 export const getCaseById = async (req, res) => {
   try {
     const caseId = req.params.id;
-    const [cases] = await db.query(
-      `SELECT 
-          c.id,
-          c.title,
-          c.description,
-          c.category,
-          c.location,
-          c.goal_amount,
-          c.raised_amount,
-          c.status,
-          c.update_text,
-          c.recovered,
-          c.created_at,
-          u.full_name AS patient_name,
-          p.gender,
-          p.date_of_birth,
-          p.medical_history
-        FROM cases c
-        JOIN patients p ON c.patient_id = p.id
-        JOIN users u ON p.user_id = u.id
-        WHERE c.id = ?`,
-      [caseId]
-    );
+    const [cases] = await db.query(`
+      SELECT 
+        c.*, 
+        u.full_name AS patient_name
+      FROM cases c
+      JOIN patients p ON c.patient_id = p.id
+      JOIN users u ON p.user_id = u.id
+      WHERE c.id = ?
+    `, [caseId]);
 
     if (cases.length === 0)
       return res.status(404).json({ message: "Case not found." });
@@ -69,3 +69,26 @@ export const getCaseById = async (req, res) => {
     return res.status(500).json({ message: "Internal server error." });
   }
 };
+
+export const createCase = async(req,res) => {
+  try{
+    const {title, description, category, location, goal_amount} = req.body;
+
+    if(!title || !description || !goal_amount)
+      return res.status(400).json({message: 'Title, description and goal amount are required.'});
+
+    const patientId = req.user.patientId;
+    if(!patientId)
+      return res.status(400).json({message : 'No patient record found for this user.'});
+
+    const [result] = await db.query(`insert into cases (patient_id,title,description,category,location,goal_amount,amount_raised,status,created_at) values (?,?,?,?,?,?,0.00,'active',NOW())`,[patientId,title,description,category || null,location || null,goal_amount]);
+
+    return res.status(201).json({
+      message:'Case created successfully.',
+      case_id: result.insertId
+    })
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal server error." });
+  }
+}

@@ -173,22 +173,6 @@ CREATE TABLE IF NOT EXISTS consultation_calls (
   FOREIGN KEY (consultation_id) REFERENCES appointments(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS cases (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  patient_id INT NOT NULL,
-  title VARCHAR(255) NOT NULL,
-  description TEXT,
-  category ENUM('surgery','cancer','dialysis','rehabilitation','general') DEFAULT 'general',
-  location VARCHAR(255),
-  goal_amount DECIMAL(10,2) NOT NULL,
-  raised_amount DECIMAL(10,2) DEFAULT 0.00,
-  update_text TEXT,
-  recovered BOOLEAN DEFAULT FALSE,
-  status ENUM('active', 'resolved', 'in_progress') DEFAULT 'active',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
-);
-
 CREATE TABLE IF NOT EXISTS ngo_partners (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL, 
@@ -238,4 +222,18 @@ CREATE TABLE IF NOT EXISTS mission_notifications (
   message TEXT NOT NULL,
   sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (mission_id) REFERENCES medical_missions(id) ON DELETE CASCADE
+);
+
+CREATE TABLE cases (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  patient_id INT NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  category VARCHAR(100),
+  location VARCHAR(255),
+  goal_amount DECIMAL(10,2) DEFAULT 0.00,
+  amount_raised DECIMAL(10,2) DEFAULT 0.00,
+  status ENUM('active','resolved','in_progress') DEFAULT 'active',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
 );

@@ -12,7 +12,7 @@ export const verifyToken = async (req,res,next) => {
         req.user = decoded;
 
         if (decoded.role === 'ngo') {
-      const [ngo] = await db.query('SELECT id FROM ngo_partners WHERE user_id = ?', [decoded.id]);
+      const [ngo] = await db.query('SELECT id FROM ngos WHERE user_id = ?', [decoded.id]);
       req.user.ngoPartnerId = ngo[0]?.id;
     }
 

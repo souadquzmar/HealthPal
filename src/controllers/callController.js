@@ -23,12 +23,6 @@ export const startCall = async (req, res) => {
 
     const consultation = consultations[0];
 
-    const isParticipant =
-      (userRole === "doctor" && consultation.doctor_user_id === userId) ||
-      (userRole === "patient" && consultation.patient_user_id === userId);
-
-    if (!isParticipant)
-      return res.status(403).json({message: "Access denied. you are not part of this consultation"});
 
     const [activeCalls] = await db.query(`select * from consultation_calls where consultation_id = ? and status = "active" `,[consultation_id]);
 
@@ -73,13 +67,6 @@ export const endCall = async (req, res) => {
         return res.status(404).json({message:'There is no active call for this consultation.'});
 
     const call = calls[0];
-
-    const isParticipant =
-      (userRole === "doctor" && call.doctor_user_id === userId) ||
-      (userRole === "patient" && call.patient_user_id === userId);
-
-    if (!isParticipant)
-      return res.status(403).json({message: "Access denied. you are not part of this consultation"});
 
     if(call.status === 'ended')
         return res.status(400).json({message:'This call is already ended.'});
