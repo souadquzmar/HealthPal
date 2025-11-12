@@ -121,3 +121,39 @@ export const getCaseDonors = async(req,res) => {
     return res.status(500).json({ message: "Internal server error." });
   }
 }
+
+export const getDonationReceipt = async (req, res) => {
+  try {
+    const donationId = req.params.donationId;
+
+    const [[receipt]] = await db.query(`
+      SELECT 
+        d.id AS donation_id,
+        u.full_name AS donor_name,
+        np.organization_name AS ngo_name,
+        c.title AS case_title,
+        d.type,
+        d.amount,
+        d.status,
+        d.created_at
+      FROM donations d
+      LEFT JOIN users u ON d.donor_id = u.id
+      LEFT JOIN ngo_partners np ON d.ngo_id = np.id
+      LEFT JOIN cases c ON d.case_id = c.id
+      WHERE d.id = ?
+    `, [donationId]);
+
+    if (!receipt) return res.status(404).json({ message: 'Receipt not found.' });
+
+    return res.status(200).json({
+      success: true,
+      receipt: {
+        ...receipt,
+        issued_at: new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal server error.' });
+  }
+};
