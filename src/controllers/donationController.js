@@ -26,3 +26,34 @@ export const makeDonation = async (req,res) => {
         return res.status(500).json({message: 'Internal server error.'});
     }
 }
+
+export const getDonationById = async(req,res) => {
+    try{
+        const donationId = req.params.id;
+        const [[donation]] = await db.query(`
+      SELECT 
+        d.id,
+        u.full_name AS donor_name,
+        np.organization_name AS ngo_name,
+        c.title AS case_title,
+        d.type,
+        d.amount,
+        d.status,
+        d.created_at
+      FROM donations d
+      LEFT JOIN users u ON d.donor_id = u.id
+      LEFT JOIN ngo_partners np ON d.ngo_id = np.id
+      LEFT JOIN cases c ON d.case_id = c.id
+      WHERE d.id = ?
+    `, [donationId]);
+
+    if (!donation)
+      return res.status(404).json({ message: 'Donation not found.' });
+
+    return res.status(200).json({ success: true, donation });
+    
+    } catch(error) {
+        console.log(error);
+        return res.status(500).json({message: 'Internal server error.'});
+    }
+}
