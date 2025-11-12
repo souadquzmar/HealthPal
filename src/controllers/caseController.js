@@ -13,6 +13,7 @@ export const listCases = async (req, res) => {
         c.amount_raised, 
         c.status, 
         c.created_at,
+        c.updated_at,
         u.full_name AS patient_name
       FROM cases c
       JOIN patients p ON c.patient_id = p.id
@@ -87,6 +88,25 @@ export const createCase = async(req,res) => {
       message:'Case created successfully.',
       case_id: result.insertId
     })
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal server error." });
+  }
+}
+
+export const updateCase = async(req,res) => {
+  try{
+    const caseId = req.params.id;
+    const {title, description, category, status} = req.body;
+    const patientId = req.user.patientId;
+
+    const [cases] = await db.query('select * from cases where id = ? and patient_id = ?',[caseId,patientId]);
+    if(cases.length === 0)
+      return res.status(403).json({message:'Access denied. This is not your case.'});
+
+    await db.query('update cases set title = ?, description = ?, status = ?, updated_at = NOW() where id = ?',[title || cases[0].title, description || cases[0].description, status || cases[0].status, caseId]);
+
+    return res.status(200).json({message:'Case updated successfully.'});
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Internal server error." });
