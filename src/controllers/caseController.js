@@ -112,22 +112,3 @@ export const updateCase = async(req,res) => {
     return res.status(500).json({ message: "Internal server error." });
   }
 }
-
-export const getCaseDonors = async(req,res) => {
-  try{
-
-    const caseId = req.params.id;
-
-    const [donors] = await db.query(`
-      SELECT u.full_name AS donor_name, d.amount, d.status, d.created_at
-      FROM donations d
-      JOIN users u ON d.donor_id = u.id
-      WHERE d.case_id = ? AND d.status != 'cancelled'
-      ORDER BY d.created_at DESC`, [caseId]);
-
-      return res.status(200).json({success:true, donor_count: donors.length, donors});
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: "Internal server error." });
-  }
-}
