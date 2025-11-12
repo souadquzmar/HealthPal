@@ -46,17 +46,6 @@ CREATE TABLE IF NOT EXISTS ngos (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS donations (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  donor_id INT NOT NULL,
-  ngo_id INT,
-  type ENUM('medicine', 'money', 'supplies') NOT NULL,
-  amount DECIMAL(10,2) DEFAULT 0.00,
-  status ENUM('pending', 'received', 'cancelled') DEFAULT 'pending',
-  FOREIGN KEY (donor_id) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (ngo_id) REFERENCES ngos(id) ON DELETE SET NULL
-);
-
 CREATE TABLE IF NOT EXISTS medicines (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
@@ -186,7 +175,7 @@ CREATE TABLE IF NOT EXISTS ngo_partners (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE medical_missions (
+CREATE TABLE IF NOT EXISTS medical_missions (
   id INT AUTO_INCREMENT PRIMARY KEY,
   ngo_id INT NOT NULL,
   title VARCHAR(255) NOT NULL,
@@ -224,7 +213,7 @@ CREATE TABLE IF NOT EXISTS mission_notifications (
   FOREIGN KEY (mission_id) REFERENCES medical_missions(id) ON DELETE CASCADE
 );
 
-CREATE TABLE cases (
+CREATE TABLE IF NOT EXISTS cases (
   id INT AUTO_INCREMENT PRIMARY KEY,
   patient_id INT NOT NULL,
   title VARCHAR(255) NOT NULL,
@@ -242,10 +231,18 @@ ALTER TABLE cases
 ADD COLUMN updated_at TIMESTAMP NULL DEFAULT NULL
 AFTER created_at;
 
-ALTER TABLE donations
-ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-AFTER status;
+drop table donations;
 
-ALTER TABLE donations
-ADD COLUMN case_id INT NULL AFTER ngo_id,
-ADD FOREIGN KEY (case_id) REFERENCES cases(id) ON DELETE CASCADE;
+CREATE TABLE IF NOT EXISTS donations (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  donor_id INT NOT NULL,
+  ngo_id INT,
+  case_id INT,
+  type ENUM('medicine', 'money', 'supplies') NOT NULL,
+  amount DECIMAL(10,2) DEFAULT 0.00,
+  status ENUM('pending', 'received', 'cancelled') DEFAULT 'pending',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (donor_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (ngo_id) REFERENCES ngos(id) ON DELETE SET NULL,
+  FOREIGN KEY (case_id) REFERENCES cases(id) ON DELETE CASCADE
+);
