@@ -1,5 +1,12 @@
 import fetch from "node-fetch";
 
+async function getSupportedLanguages() {
+  const response = await fetch("http://localhost:5001/languages");
+  if (!response.ok) throw new Error("Failed to fetch supported languages");
+  const data = await response.json();
+  return data.map(lang => lang.code); 
+}
+
 async function translateWithLibre(text, targetLang) {
   try {
     const response = await fetch("http://localhost:5001/translate", {
@@ -36,11 +43,15 @@ export const translateText = async (req, res) => {
     return res.status(400).json({ error: "text and target_language are required" });
   }
 
-  if (!["ar", "en"].includes(target_language)) {
-    return res.status(400).json({ error: "target_language must be 'ar' or 'en'" });
-  }
-
   try {
+    const supportedLanguages = await getSupportedLanguages();
+
+    if (!supportedLanguages.includes(target_language)) {
+      return res.status(400).json({ 
+        error: `target_language must be one of: ${supportedLanguages.join(", ")}` 
+      });
+    }
+
     const result = await translateWithLibre(text, target_language);
     res.status(200).json(result);
   } catch (error) {
