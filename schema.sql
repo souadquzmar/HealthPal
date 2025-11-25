@@ -247,3 +247,30 @@ CREATE TABLE IF NOT EXISTS donations (
   FOREIGN KEY (case_id) REFERENCES cases(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS health_guides (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255),
+    category VARCHAR(100),
+    content TEXT,
+    language VARCHAR(20) DEFAULT 'ar',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS health_alerts (
+    id INT AUTO_INCREMENT PRIMARY_KEY,
+    title VARCHAR(255),
+    description TEXT,
+    severity ENUM('low','medium','high') DEFAULT 'low',
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    closed_at TIMESTAMP NULL
+);
+CREATE TABLE IF NOT EXISTS workshops (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255),
+    description TEXT,
+    date DATETIME,
+    location VARCHAR(255),
+    type ENUM('onsite','online') DEFAULT 'onsite',
+    link VARCHAR(500)
+);
