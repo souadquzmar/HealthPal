@@ -17,6 +17,9 @@ import ngoRoutes from './routes/ngoRoutes.js';
 import donationRoutes from './routes/donationRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import guideRoutes from './routes/guideRoutes.js';
+import healthAlertRoutes from "./routes/healthAlertRoutes.js";
+import workshopRoutes from "./routes/workshopRoutes.js";
+
 const app = express();
 
 app.use(express.json());
@@ -36,6 +39,9 @@ app.use('/api/ngo', ngoRoutes);
 app.use('/api',donationRoutes);
 app.use('/api',dashboardRoutes);
 app.use("/api/health-guides", guideRoutes);
+app.use("/api/health-alerts", healthAlertRoutes);
+app.use("/api/workshops", workshopRoutes);
+
 
 app.get('/', (req, res) => {
     res.send('HealthPal is running');
