@@ -1,44 +1,42 @@
 import db from "../config/database.js";
 
-// CREATE
-const createAlert = async (req, res) => {
+// CREATE ALERT
+export const createAlert = async (req, res) => {
     const { title, description, severity, is_active, closed_at } = req.body;
     try {
         const [result] = await db.execute(
-            "INSERT INTO health_alerts (title, description, severity, is_active, closed_at) VALUES (?,?,?,?,?)",
-            [title, description, severity, is_active, closed_at]
+            `INSERT INTO health_alerts (title, description, severity, is_active, closed_at) VALUES (?,?,?,?,?)`,
+            [title, description, severity || "low", is_active !== undefined ? is_active : true, closed_at || null]
         );
         res.json({ message: "Alert created", id: result.insertId });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: true, message: err.message });
     }
 };
 
-// GET ALL
-const getAlerts = async (req, res) => {
+// GET ALL ALERTS
+export const getAlerts = async (req, res) => {
     try {
-        const [results] = await db.execute("SELECT * FROM health_alerts");
-        res.json(results);
+        const [rows] = await db.execute("SELECT * FROM health_alerts ORDER BY created_at DESC");
+        res.json(rows);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: true, message: err.message });
     }
 };
 
-// GET ONE
-const getAlert = async (req, res) => {
+// GET ONE ALERT
+export const getAlert = async (req, res) => {
     try {
-        const [result] = await db.execute(
-            "SELECT * FROM health_alerts WHERE id=?",
-            [req.params.id]
-        );
-        res.json(result[0]);
+        const [rows] = await db.execute("SELECT * FROM health_alerts WHERE id = ?", [req.params.id]);
+        if (rows.length === 0) return res.status(404).json({ error: true, message: "Alert not found" });
+        res.json(rows[0]);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: true, message: err.message });
     }
 };
 
-// UPDATE
-const updateAlert = async (req, res) => {
+// UPDATE ALERT
+export const updateAlert = async (req, res) => {
     const { title, description, severity, is_active, closed_at } = req.body;
     try {
         await db.execute(
@@ -47,24 +45,16 @@ const updateAlert = async (req, res) => {
         );
         res.json({ message: "Alert updated" });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: true, message: err.message });
     }
 };
 
-// DELETE
-const deleteAlert = async (req, res) => {
+// DELETE ALERT
+export const deleteAlert = async (req, res) => {
     try {
         await db.execute("DELETE FROM health_alerts WHERE id=?", [req.params.id]);
         res.json({ message: "Alert deleted" });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: true, message: err.message });
     }
-};
-
-export default {
-    createAlert,
-    getAlerts,
-    getAlert,
-    updateAlert,
-    deleteAlert
 };
