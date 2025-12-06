@@ -227,11 +227,6 @@ CREATE TABLE IF NOT EXISTS cases (
   FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
 );
 
-ALTER TABLE cases
-ADD COLUMN updated_at TIMESTAMP NULL DEFAULT NULL
-AFTER created_at;
-
-drop table donations;
 
 CREATE TABLE IF NOT EXISTS donations (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -257,7 +252,7 @@ CREATE TABLE IF NOT EXISTS health_guides (
 );
 
 CREATE TABLE IF NOT EXISTS health_alerts (
-    id INT AUTO_INCREMENT PRIMARY_KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255),
     description TEXT,
     severity ENUM('low','medium','high') DEFAULT 'low',
@@ -274,3 +269,4 @@ CREATE TABLE IF NOT EXISTS workshops (
     type ENUM('onsite','online') DEFAULT 'onsite',
     link VARCHAR(500)
 );
+
