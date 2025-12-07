@@ -25,7 +25,7 @@ export const makeDonation = async (req, res) => {
     }
 
     if (ngo_id) {
-      const [ngos] = await db.query("SELECT id FROM ngo_partners WHERE id = ?", [
+      const [ngos] = await db.query("SELECT id FROM ngos WHERE id = ?", [
         ngo_id,
       ]);
       if (ngos.length === 0)
@@ -68,7 +68,7 @@ export const getDonationById = async (req, res) => {
         d.created_at
       FROM donations d
       LEFT JOIN users u ON d.donor_id = u.id
-      LEFT JOIN ngo_partners np ON d.ngo_id = np.id
+      LEFT JOIN ngos np ON d.ngo_id = np.id
       LEFT JOIN cases c ON d.case_id = c.id
       WHERE d.id = ?
     `,

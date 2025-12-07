@@ -1,12 +1,18 @@
 import express from "express";
-import healthAlertsController from "../controllers/healthAlertsController.js";
+import {
+  createAlert,
+  getAlerts,
+  getAlert,
+  updateAlert,
+  deleteAlert,
+} from "../controllers/healthAlertController.js";
 
 const router = express.Router();
 
-router.post("/", healthAlertsController.createAlert);
-router.get("/", healthAlertsController.getAlerts);
-router.get("/:id", healthAlertsController.getAlert);
-router.put("/:id", healthAlertsController.updateAlert);
-router.delete("/:id", healthAlertsController.deleteAlert);
+router.post("/", createAlert);
+router.get("/alerts", getAlerts);
+router.get("/:id", getAlert);
+router.put("/:id", updateAlert);
+router.delete("/:id", deleteAlert);
 
 export default router;
