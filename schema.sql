@@ -270,3 +270,5 @@ CREATE TABLE IF NOT EXISTS workshops (
     link VARCHAR(500)
 );
 
+ALTER TABLE users 
+ADD COLUMN is_verified TINYINT(1) DEFAULT 0;
