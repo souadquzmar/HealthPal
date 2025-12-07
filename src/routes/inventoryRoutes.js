@@ -1,14 +1,15 @@
 import express from "express";
 import {
-  getAllInventory,
-  addInventoryItem,
-  updateInventoryStatus,
-} from "../controllers/inventoryController.js";
+  getAllEquipment,
+  addEquipment,
+  updateEquipmentAvailability,
+} from "../controllers/equipmentController.js";
+import { verifyToken, verifyRole } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/", getAllInventory);
-router.post("/", addInventoryItem);
-router.put("/:id", updateInventoryStatus);
+router.get("/", getAllEquipment);
+router.post("/", verifyToken, verifyRole(['ngo', 'admin']), addEquipment);
+router.put("/:id", verifyToken, verifyRole(['ngo', 'admin']), updateEquipmentAvailability);
 
 export default router;

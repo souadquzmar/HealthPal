@@ -4,11 +4,13 @@ import {
   addEquipment,
   updateEquipmentAvailability,
 } from "../controllers/equipmentController.js";
+import { verifyToken, verifyRole } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
 router.get("/", getAllEquipment);
-router.post("/", addEquipment);
-router.put("/:id", updateEquipmentAvailability);
+
+router.post("/", verifyToken, verifyRole(['ngo', 'admin']), addEquipment);
+router.put("/:id", verifyToken, verifyRole(['ngo', 'admin']), updateEquipmentAvailability);
 
 export default router;

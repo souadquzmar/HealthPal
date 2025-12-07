@@ -13,7 +13,8 @@
             "name": "MySQL HealthPal",
             "database": "healthpal",
             "username": "root",
-            "askForPassword": true
+            "connectionTimeout": 30,
+            "password": "123456"
         }
     ]
 }
