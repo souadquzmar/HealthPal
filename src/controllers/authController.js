@@ -52,6 +52,15 @@ export const registerUser = async (req, res) => {
           [userId, gender, date_of_birth, medical_history]
         );
         break;
+      case 'doctor':
+        if (!specialty || !license_number) {
+          throw new Error('Specialty and license number are required for doctor registration');
+        }
+        await connection.query(
+          'INSERT INTO doctors (user_id, specialty, license_number, is_verified) VALUES (?,?,?,?)',
+          [userId, specialty, license_number, 0] // 0 لانتظار موافقة admin
+        );
+        break;
 
       case 'counselor':
         await connection.query(
@@ -78,8 +87,10 @@ export const registerUser = async (req, res) => {
     const msg =
       role === 'doctor'
         ? 'Doctor registered successfully. Your account is pending verification by an admin.'
+        : role === 'ngo'
+        ? 'NGO registered successfully. Pending verification.'
         : 'User registered successfully';
-
+        
     const token = jwt.sign(
       { id: userId, role: role },
       process.env.JWT_SECRET,

@@ -1,29 +1,33 @@
+// authMiddleware.js
 import jwt from 'jsonwebtoken';
 import pool from '../config/database.js';
 
 export const verifyToken = async (req, res, next) => {
     const authHeader = req.headers.authorization;
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ message: 'Access denied. No token provided.' });
     }
 
     const token = authHeader.split(' ')[1];
-    
+
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
         req.user = decoded;
 
+        // NGO
         if (decoded.role === 'ngo') {
             const [ngo] = await pool.query(
                 'SELECT id FROM ngo_partners WHERE user_id = ?', 
                 [decoded.id]
             );
-            if (ngo[0]) {
-                req.user.ngoPartnerId = ngo[0].id;
+            if (!ngo[0]) {
+                return res.status(400).json({ message: 'NGO profile not found for this user' });
             }
+            req.user.ngoPartnerId = ngo[0].id;
         }
-        
+
+        // Patient
         if (decoded.role === 'patient') {
             const [patient] = await pool.query(
                 'SELECT id FROM patients WHERE user_id = ?', 
@@ -35,7 +39,7 @@ export const verifyToken = async (req, res, next) => {
             req.user.patientId = patient[0].id;
         }
 
-        
+        // Doctor
         if (decoded.role === 'doctor') {
             const [doctor] = await pool.query(
                 'SELECT id FROM doctors WHERE user_id = ?', 

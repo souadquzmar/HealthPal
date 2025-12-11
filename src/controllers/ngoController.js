@@ -1,51 +1,81 @@
 import db from '../config/database.js';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
+// جلب جميع NGOs الموثوقة
 export const getVerifiedNGOs = async (req, res) => {
   try {
     const [rows] = await db.query(`
       SELECT id, organization_name, description, website, contact_email, contact_phone, verified 
-      FROM ngo_partners 
+      FROM ngo_partners
       WHERE verified = TRUE
     `);
     res.json(rows);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching verified NGOs', error: error.message });
+    res.status(500).json({ message: 'Error fetching NGOs', error: error.message });
   }
 };
 
 export const registerNGO = async (req, res) => {
-  const { organization_name, description, website, contact_email, contact_phone } = req.body;
-  const userId = req.user.id;
+  const { fullName, email, password, organization_name, description, website, contact_email, contact_phone } = req.body;
+
+  if (!fullName || !email || !password || !organization_name) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
 
   try {
-    const [result] = await db.query(
+    const [existingUser] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+    if (existingUser.length > 0) return res.status(409).json({ message: 'Email already exists' });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const [userResult] = await db.query(
+      'INSERT INTO users (full_name, email, password_hash, role, is_verified) VALUES (?,?,?,?,?)',
+      [fullName, email, hashedPassword, 'ngo', 1] 
+    );
+    const userId = userResult.insertId;
+
+    const [ngoResult] = await db.query(
       `INSERT INTO ngo_partners 
-       (user_id, organization_name, description, website, contact_email, contact_phone)
-       VALUES (?, ?, ?, ?, ?, ?)`,
+       (user_id, organization_name, description, website, contact_email, contact_phone, verified)
+       VALUES (?, ?, ?, ?, ?, ?, TRUE)`,
       [userId, organization_name, description, website, contact_email, contact_phone]
     );
-    res.status(201).json({ ngo_id: result.insertId, message: 'NGO registered - pending verification' });
+
+    res.status(201).json({
+      message: 'NGO registered successfully',
+      ngo_id: ngoResult.insertId,
+      user_id: userId
+    });
+
   } catch (error) {
-    res.status(500).json({ message: 'Error registering NGO', error: error.message });
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 };
 
 export const createMedicalMission = async (req, res) => {
-  const { title, description, location, start_date, end_date, type } = req.body;
-  const ngo_id = req.user.ngoPartnerId; 
+    const { title, description, location, start_date, end_date, type } = req.body;
+    const ngo_id = req.user.ngoPartnerId;
 
-  try {
-    const [result] = await db.query(
-      `INSERT INTO medical_missions 
-       (ngo_id, title, description, location, start_date, end_date, type, created_by)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [ngo_id, title, description, location, start_date, end_date, type, req.user.id]
-    );
-    res.status(201).json({ mission_id: result.insertId, message: 'Mission created' });
-  } catch (error) {
-    res.status(500).json({ message: 'Error creating mission', error: error.message });
-  }
+    if (!ngo_id) {
+        return res.status(400).json({ message: 'Cannot create mission: NGO not found' });
+    }
+
+    try {
+        const [result] = await db.query(
+            `INSERT INTO medical_missions 
+             (ngo_id, title, description, location, start_date, end_date, type, created_by)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [ngo_id, title, description, location, start_date, end_date, type, req.user.id]
+        );
+        res.status(201).json({ mission_id: result.insertId, message: 'Mission created' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error creating mission', error: error.message });
+    }
 };
+
 
 export const getMedicalMissions = async (req, res) => {
   try {
