@@ -56,10 +56,6 @@ export const registerUser = async (req, res) => {
         if (!specialty || !license_number) {
           throw new Error('Specialty and license number are required for doctor registration');
         }
-        await connection.query(
-          'INSERT INTO doctors (user_id, specialty, license_number, is_verified) VALUES (?,?,?,?)',
-          [userId, specialty, license_number, 0] // 0 لانتظار موافقة admin
-        );
         break;
 
       case 'counselor':

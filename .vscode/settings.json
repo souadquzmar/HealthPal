@@ -14,7 +14,7 @@
             "database": "healthpal",
             "username": "root",
             "connectionTimeout": 30,
-            "password": "123456"
+            "askForPassword": true
         }
     ]
 }

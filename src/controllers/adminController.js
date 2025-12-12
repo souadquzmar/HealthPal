@@ -16,7 +16,7 @@ export const verifyDoctor = async (req, res) => {
     );
 
     if (result.affectedRows === 0) {
-      throw new Error('Doctor not found or already verified.');
+      res.status(404).json({ message: 'Doctor not found or already verified.' });
     }
 
     await connection.query(
