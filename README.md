@@ -4,7 +4,7 @@ HealthPal is a full-stack healthcare support system built to provide accessible 
 
 Designed for communities with limited healthcare access, HealthPal connects patients, doctors, donors, NGOs, and counselors through a set of powerful, secure, and scalable APIs.
 
-API documentaion on postman: https://documenter.getpostman.com/view/49387501/2sB3dSRUr3
+API documentaion on postman: https://documenter.getpostman.com/view/49387501/2sB3dSRUr3  
 🚀 Key Features
 🩺 1. Remote Medical Consultations
 
